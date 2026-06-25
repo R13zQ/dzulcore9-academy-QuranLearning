@@ -5,6 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>QuranVerse: Odyssey 30 - Web Game Edukasi Al-Qur'an</title>
   <link rel="stylesheet" href="style.css">
+  <script>
+    // Global error handler to catch resource 404s and runtime scripts errors
+    window.addEventListener('error', function(e) {
+      if (e.target && (e.target.tagName === 'SCRIPT' || e.target.tagName === 'LINK')) {
+        showError('Gagal memuat file: ' + (e.target.src || e.target.href));
+        return;
+      }
+      showError('System Error: ' + e.message + ' (' + e.filename + ':' + e.lineno + ')');
+    }, true);
+
+    function showError(msg) {
+      let box = document.getElementById('error-debug-box');
+      if (!box) {
+        box = document.createElement('div');
+        box.id = 'error-debug-box';
+        box.style.position = 'fixed';
+        box.style.bottom = '15px';
+        box.style.left = '15px';
+        box.style.background = 'rgba(255, 23, 68, 0.95)';
+        box.style.color = 'white';
+        box.style.padding = '12px 18px';
+        box.style.zIndex = '999999';
+        box.style.fontFamily = 'monospace';
+        box.style.fontSize = '12px';
+        box.style.borderRadius = '8px';
+        box.style.boxShadow = '0 4px 15px rgba(0,0,0,0.5)';
+        box.style.maxWidth = '90%';
+        box.style.wordBreak = 'break-all';
+        box.style.lineHeight = '1.4';
+        document.body.appendChild(box);
+      }
+      box.innerHTML += '<div style="margin-top:4px;">⚠️ ' + msg + '</div>';
+    }
+  </script>
 </head>
 <body>
 
@@ -29,6 +63,9 @@
           <h1>QuranVerse</h1>
           <h2>Odyssey 30</h2>
           <div class="creator-credits">Fakhira dan Faiza Creative Design</div>
+          <div class="welcome-message">
+            Selamat Datang dan Belajar Teman-Teman, Fakhira dan Faiza senang bisa membantu
+          </div>
         </div>
         <div class="menu-buttons">
           <button class="btn btn-primary" id="btn-play">
