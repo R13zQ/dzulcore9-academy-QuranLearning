@@ -133,6 +133,16 @@ class UIManager {
     if (this.screens[screenId]) {
       this.screens[screenId].classList.add('active');
     }
+
+    // Toggle pointer-events on ui-container based on active screen to fix mobile browsers hit-testing
+    const uiContainer = document.getElementById('ui-container');
+    if (uiContainer) {
+      if (screenId === 'hud') {
+        uiContainer.style.pointerEvents = 'none'; // Pass touch drag events to 3D canvas
+      } else {
+        uiContainer.style.pointerEvents = 'auto'; // Capture clicks for menu buttons
+      }
+    }
   }
 
   // HUD updates
