@@ -5,6 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>QuranVerse: Odyssey 30 - Web Game Edukasi Al-Qur'an</title>
   <link rel="stylesheet" href="style.css?v=1.1.0">
+  <style>
+    /* CSS Tambahan Khusus Mobile untuk Menjamin Kontrol Berjalan Mulus */
+    body, html, #canvas-container, #ui-container {
+      touch-action: none;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+      overflow: hidden;
+    }
+    /* Memastikan tombol D-Pad dan Joystick responsif saat disentuh di HP */
+    .dpad-btn, #joystick-zone, .hud-btn, .btn {
+      pointer-events: auto !important;
+    }
+  </style>
   <script>
     // Global error and debug handler
     window.addEventListener('error', function(e) {
@@ -58,7 +72,7 @@
   <div id="canvas-container" style="width:100%; height:100%; position:absolute; top:0; left:0; z-index:1;"></div>
 
   <!-- Screen overlays (Absolute layout ensures no mobile height collapses) -->
-  <div id="ui-container" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:2; pointer-events:auto;">
+  <div id="ui-container" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:2; pointer-events:none;">
 
     <!-- Slidedown Notification -->
     <div id="notification" class="glass">Sistem Diaktifkan</div>
@@ -69,7 +83,7 @@
     </div>
 
     <!-- 1. Main Menu Screen -->
-    <div id="menu-screen" class="screen-overlay active">
+    <div id="menu-screen" class="screen-overlay active" style="pointer-events: auto;">
       <div class="menu-container glass glow-emerald">
         <div class="title-container">
           <h1>QuranVerse</h1>
@@ -100,7 +114,7 @@
         <div class="instructions-card glass">
           <strong>CARA BERMAIN:</strong><br>
           • <strong>Desktop:</strong> W,A,S,D / Arah Panah untuk bergerak. SPACE untuk Melompat. Geser Mouse untuk kamera.<br>
-          • <strong>Mobile:</strong> Gunakan Joystick (kiri) untuk bergerak dan Tombol Jump (kanan). Usap layar kanan untuk rotasi kamera.<br>
+          • <strong>Mobile:</strong> Gunakan Joystick (kiri) untuk bergerak dan D-Pad (kanan). Usap layar kanan untuk rotasi kamera.<br>
           • <strong>Dekripsi:</strong> Dekati gerbang anomaly, tekan <strong>[E]</strong> atau <strong>TAP</strong> layar untuk menjawab teka-teki hafalan Juz 30. Hubungkan jembatan cahaya dan selesaikan misi!
         </div>
       </div>
@@ -157,11 +171,11 @@
       </div>
 
       <!-- Mobile Virtual Controls -->
-      <div class="mobile-controls hidden">
+      <div id="mobile-controls-wrapper" class="mobile-controls hidden" style="pointer-events: auto;">
         <div id="joystick-zone">
           <div id="joystick-knob"></div>
         </div>
-        <!-- D-Pad Directional Controls (Replaced JUMP button) -->
+        <!-- D-Pad Directional Controls -->
         <div class="dpad-container">
           <button id="dpad-up" class="dpad-btn">▲</button>
           <div class="dpad-row">
@@ -244,5 +258,52 @@
   <script src="src/ui.js?v=1.1.0"></script>
   <script src="src/engine3d.js?v=1.1.0"></script>
   <script src="src/game.js?v=1.1.0"></script>
+
+  <!-- Mobile Touch Integration Script -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const ctrlWrapper = document.getElementById('mobile-controls-wrapper');
+      
+      if (isMobileDevice && ctrlWrapper) {
+        // Hapus kelas 'hidden' agar UI Kontrol Mobile muncul otomatis di HP
+        ctrlWrapper.classList.remove('hidden');
+        window.showDebugMsg("Mode Mobile terdeteksi. Mengaktifkan Virtual Joystick.");
+
+        // Membatasi pixel ratio agar Chrome Mobile tidak crash/lag akibat performa rendering
+        if (window.THREE && window.renderer) {
+          window.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+        }
+
+        // Tangani usapan di bagian kanan layar khusus untuk rotasi kamera mobile
+        let touchX = 0, touchY = 0;
+        window.addEventListener('touchstart', function(e) {
+          if (e.touches[0].clientX > window.innerWidth / 2) {
+            touchX = e.touches[0].clientX;
+            touchY = e.touches[0].clientY;
+          }
+        }, { passive: true });
+
+        window.addEventListener('touchmove', function(e) {
+          if (e.touches[0].clientX > window.innerWidth / 2 && window.camera) {
+            let dx = e.touches[0].clientX - touchX;
+            let dy = e.touches[0].clientY - touchY;
+            window.camera.rotation.y -= dx * 0.003;
+            window.camera.rotation.x -= dy * 0.003;
+            touchX = e.touches[0].clientX;
+            touchY = e.touches[0].clientY;
+          }
+        }, { passive: true });
+      }
+
+      // Tombol toggle manual di HUD
+      const toggleBtn = document.getElementById('hud-btn-toggle-touch');
+      if (toggleBtn && ctrlWrapper) {
+        toggleBtn.addEventListener('click', function() {
+          ctrlWrapper.classList.toggle('hidden');
+        });
+      }
+    });
+  </script>
 </body>
 </html>
