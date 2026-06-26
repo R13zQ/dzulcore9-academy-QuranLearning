@@ -6,16 +6,20 @@
   <title>QuranVerse: Odyssey 30 - Web Game Edukasi Al-Qur'an</title>
   <link rel="stylesheet" href="style.css?v=1.1.0">
   <style>
-    /* CSS Tambahan Khusus Mobile untuk Menjamin Kontrol Berjalan Mulus */
-    body, html, #canvas-container, #ui-container {
+    /* Mencegah gesture bawaan Chrome Mobile agar game tidak ketarik/zoom */
+    body, html {
       touch-action: none;
       -webkit-touch-callout: none;
       -webkit-user-select: none;
       user-select: none;
       overflow: hidden;
+      width: 100%;
+      height: 100%;
+      position: fixed;
     }
-    /* Memastikan tombol D-Pad dan Joystick responsif saat disentuh di HP */
-    .dpad-btn, #joystick-zone, .hud-btn, .btn {
+    
+    /* Memaksa seluruh elemen UI agar responsif menerima TAP/Klik di Layar HP */
+    #ui-container, .screen-overlay, .menu-container, .menu-buttons, .btn, .hud-btn, .dpad-btn, #joystick-zone {
       pointer-events: auto !important;
     }
   </style>
@@ -25,12 +29,10 @@
       if (e.target && (e.target.tagName === 'SCRIPT' || e.target.tagName === 'LINK')) {
         const errorMsg = 'Gagal memuat file: ' + (e.target.src || e.target.href);
         showDebugMsg(errorMsg, true);
-        alert(errorMsg); // Fallback alert for mobile devices
         return;
       }
       const errorMsg = 'System Error: ' + e.message + ' (' + e.filename + ':' + e.lineno + ')';
       showDebugMsg(errorMsg, true);
-      alert(errorMsg); // Fallback alert for mobile devices
     }, true);
 
     function showDebugMsg(msg, isError = false) {
@@ -71,8 +73,8 @@
   <!-- 3D Canvas Container -->
   <div id="canvas-container" style="width:100%; height:100%; position:absolute; top:0; left:0; z-index:1;"></div>
 
-  <!-- Screen overlays (Absolute layout ensures no mobile height collapses) -->
-  <div id="ui-container" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:2; pointer-events:none;">
+  <!-- Screen overlays (Diperbaiki agar merespons input sentuh mobile dengan mutlak) -->
+  <div id="ui-container" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:2; pointer-events:auto;">
 
     <!-- Slidedown Notification -->
     <div id="notification" class="glass">Sistem Diaktifkan</div>
@@ -93,7 +95,7 @@
             Selamat Datang dan Belajar Teman-Teman, Fakhira dan Faiza senang bisa membantu
           </div>
         </div>
-        <div class="menu-buttons">
+        <div class="menu-buttons" style="pointer-events: auto;">
           <button class="btn btn-primary" id="btn-play">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
             Mulai Perjalanan
@@ -259,23 +261,31 @@
   <script src="src/engine3d.js?v=1.1.0"></script>
   <script src="src/game.js?v=1.1.0"></script>
 
-  <!-- Mobile Touch Integration Script -->
+  <!-- Script Penyelamat Kontrol Sentuh Mobile (Anti-Block) -->
   <script>
     document.addEventListener("DOMContentLoaded", function() {
       const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
       const ctrlWrapper = document.getElementById('mobile-controls-wrapper');
       
-      if (isMobileDevice && ctrlWrapper) {
-        // Hapus kelas 'hidden' agar UI Kontrol Mobile muncul otomatis di HP
-        ctrlWrapper.classList.remove('hidden');
-        window.showDebugMsg("Mode Mobile terdeteksi. Mengaktifkan Virtual Joystick.");
+      // Amankan elemen pembungkus utama agar bisa memproses sentuhan di HP
+      const uiContainer = document.getElementById('ui-container');
+      if (uiContainer) {
+        uiContainer.style.setProperty('pointer-events', 'auto', 'important');
+      }
 
-        // Membatasi pixel ratio agar Chrome Mobile tidak crash/lag akibat performa rendering
+      if (isMobileDevice) {
+        window.showDebugMsg("Sistem Mobile Aktif. Tombol Menu Siap Ditekan.");
+        
+        if (ctrlWrapper) {
+          ctrlWrapper.classList.remove('hidden');
+        }
+
+        // Pancing penanganan frame grafis Three.js agar stabil dan hemat memori GPU HP
         if (window.THREE && window.renderer) {
           window.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
         }
 
-        // Tangani usapan di bagian kanan layar khusus untuk rotasi kamera mobile
+        // Amankan penanganan touch gesture untuk rotasi pandangan kamera
         let touchX = 0, touchY = 0;
         window.addEventListener('touchstart', function(e) {
           if (e.touches[0].clientX > window.innerWidth / 2) {
@@ -296,7 +306,7 @@
         }, { passive: true });
       }
 
-      // Tombol toggle manual di HUD
+      // Handler interaktif tombol manual HUD
       const toggleBtn = document.getElementById('hud-btn-toggle-touch');
       if (toggleBtn && ctrlWrapper) {
         toggleBtn.addEventListener('click', function() {
