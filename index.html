@@ -6,22 +6,46 @@
   <title>QuranVerse: Odyssey 30 - Web Game Edukasi Al-Qur'an</title>
   <link rel="stylesheet" href="style.css?v=1.1.0">
   <style>
-    /* Mencegah gesture bawaan Chrome Mobile agar game tidak ketarik/zoom */
+        /* Mencegah gesture bawaan Chrome Mobile agar halaman tidak ketarik ke bawah */
     body, html {
-      touch-action: none;
-      -webkit-touch-callout: none;
-      -webkit-user-select: none;
-      user-select: none;
-      overflow: hidden;
-      width: 100%;
-      height: 100%;
-      position: fixed;
+      touch-action: none !important;
+      -webkit-touch-callout: none !important;
+      -webkit-user-select: none !important;
+      user-select: none !important;
+      overflow: hidden !important;
+      width: 100% !important;
+      height: 100% !important;
+      position: fixed !important;
     }
     
-    /* Memaksa seluruh elemen UI agar responsif menerima TAP/Klik di Layar HP */
-    #ui-container, .screen-overlay, .menu-container, .menu-buttons, .btn, .hud-btn, .dpad-btn, #joystick-zone {
+    /* MEMAKSA lapisan menu utama untuk naik ke kasta tertinggi agar bisa menerima sentuhan */
+    #ui-container {
       pointer-events: auto !important;
+      z-index: 9999 !important; /* Menaikkan seluruh kontainer UI di atas lapisan partikel/3D */
     }
+
+    .screen-overlay {
+      pointer-events: auto !important;
+      z-index: 10000 !important;
+    }
+
+    .menu-container, .menu-buttons {
+      pointer-events: auto !important;
+      z-index: 10001 !important;
+    }
+
+    /* Memastikan tombol menu utama mutlak merespons ketukan jempol di HP */
+    .btn, .hud-btn, .dpad-btn, #joystick-zone {
+      pointer-events: auto !important;
+      cursor: pointer !important;
+      z-index: 10002 !important;
+    }
+
+    /* Menurunkan paksa lapisan canvas 3D agar berada di latar paling belakang */
+    #canvas-container, canvas {
+      z-index: 1 !important;
+    }
+
   </style>
   <script>
     // Global error and debug handler
