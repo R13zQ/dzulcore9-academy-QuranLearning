@@ -198,3 +198,11 @@ class Controls {
 
 // Inisialisasi secara global agar bisa diakses oleh engine3d.js / game.js
 window.Controls = Controls;
+// Inisialisasi secara global agar bisa diakses oleh engine3d.js / game.js
+window.Controls = Controls;
+
+// Trik Kompatibilitas: Menyediakan objek instansiasi otomatis dengan huruf kecil
+// agar engine3d.js atau game.js tidak mendeteksi kegagalan WebGL akibat objek undefined
+if (!window.controls) {
+    window.controls = new Controls();
+}
